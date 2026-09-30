@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Samsung Бараа Бүртгэл</title>
+    <!-- Камераар баркод унших сан -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 15px; margin: 0; background: #f8f9fa; }
+        h2 { text-align: center; color: #1a1a1a; margin-bottom: 15px; }
+        #reader { width: 100%; max-width: 450px; margin: 0 auto 15px auto; border-radius: 12px; overflow: hidden; background: #000; }
+        .input-box { display: flex; gap: 8px; margin-bottom: 15px; }
+        input[type="text"] { flex: 1; padding: 14px; font-size: 16px; border: 1px solid #ced4da; border-radius: 8px; outline: none; }
+        button { padding: 14px 18px; font-size: 15px; font-weight: bold; background: #0d6efd; color: white; border: none; border-radius: 8px; }
+        .btn-success { background: #198754; width: 100%; padding: 14px; font-size: 16px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        th, td { border-bottom: 1px solid #dee2e6; padding: 10px; text-align: left; font-size: 14px; }
+        th { background: #e9ecef; }
+        .success-row { animation: highlight 1.5s ease-out; }
+    </style>
+</head>
+<body>
+
+<h2>📱 Samsung Бараа Бүртгэл</h2>
+
+<!-- Утасны камерны цонх -->
+<div id="reader"></div>
+
+<!-- Гараар эсвэл залгадаг сканераар оруулдах хэсэг -->
+<div class="input-box">
+    <input type="text" id="manualCode" placeholder="Код гараар бичих / Уншуулах" onkeypress="if(event.key==='Enter') handleInput()">
+    <button onclick="handleInput()">Нэмэх</button>
+</div>
+
+<button class="btn-success" onclick="exportCSV()">💾 Excel (CSV) Татаж авах</button>
+
+<h3>Бүртгэгдсэн: <span id="totalCount">0</span> ширхэг</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Мөр</th>
+            <th>Барааны нэр</th>
+            <th>Тоо</th>
+        </tr>
+    </thead>
+    <tbody id="logTable"></tbody>
+</table>
+
+<script>
+    const MASTER_LIST = {
+        "8656000340183": {row: 25, name: "FC Бургер Үхрийн махтай 190г", qty: 1},
+        "8656000340220": {row: 29, name: "FC Бургер Халуун ногоо, тахианы махтай 215г", qty: 1},
+        "8656000340107": {row: 19, name: "FC Сэндвич Хавчны махтай 195г", qty: 1},
+        "8656000340329": {row: 34, name: "FC Цуйван 350гр", qty: 1},
+        "8656000340084": {row: 17, name: "FC Сэндвич Туна 165г", qty: 1},
+        "8656000340190": {row: 26, name: "FC Бургер Бекон, үхрийн махтай 210г", qty: 1},
+        "8656000340206": {row: 27, name: "FC Бургер Гахайн махтай 190г", qty: 1},
+        "8656000343210": {row: 35, name: "FC Будаатай хуурга 350г", qty: 1},
+        "8656000340367": {row: 37, name: "FC Чикен Кацу 380г", qty: 1},
+        "8656000340350": {row: 36, name: "FC Булгуги 350г", qty: 1},
+        "8654000250402": {row: 15, name: "Т Хушгатай ороомог монбейкери 70гр", qty: 1},
+        "8656000936157": {row: 44, name: "Халуун ногоотой тахиан махан шорлог 4ш", qty: 4},
+        "8656000936140": {row: 43, name: "Терияки соустай тахиан махан шорлог 4ш", qty: 4},
+        "8658000445919": {row: 55, name: "Буррито гахайн махтай 240гр", qty: 1},
+        "8658000253081": {row: 53, name: "Буррито тахианы махтай 240гр", qty: 1}
+    };
+
+    const ALIASES = {
+        "8656000936034": "8656000936140"
+    };
+
+    let logs = [];
+    let lastScannedCode = "";
+    let lastScanTime = 0;
+
+    function findItem(code) {
+        code = code.trim();
+        if (ALIASES[code]) code = ALIASES[code];
+        for (let prefix in MASTER_LIST) {
+            if (code.startsWith(prefix)) return MASTER_LIST[prefix];
+        }
+        return null;
+    }
+
+    function addBarcode(code) {
+        const now = Date.now();
+        // Дараалсан давхардлаас сэргийлэх (1.5 секунд дотор)
+        if (code === lastScannedCode && (now - lastScanTime) < 1500) return;
+        
+        lastScannedCode = code;
+        lastScanTime = now;
+
+        const item = findItem(code);
+        if (item) {
+            logs.unshift({
+                time: new Date().toLocaleTimeString(),
+                code: code,
+                row: item.row,
+                name: item.name,
+                qty: item.qty
+            });
+            renderTable();
+            if (navigator.vibrate) navigator.vibrate(100); // Samsung утас чичирнэ
+        } else {
+            alert(`❌ Олдсонгүй: ${code}`);
+        }
+    }
+
+    function handleInput() {
+        const inp = document.getElementById("manualCode");
+        if (inp.value) {
+            addBarcode(inp.value);
+            inp.value = "";
+        }
+    }
+
+    function renderTable() {
+        document.getElementById("totalCount").innerText = logs.length;
+        const tbody = document.getElementById("logTable");
+        tbody.innerHTML = logs.map(l => `
+            <tr>
+                <td><b>${l.row}</b></td>
+                <td>${l.name}</td>
+                <td>${l.qty}ш</td>
+            </tr>
+        `).join("");
+    }
+
+    function exportCSV() {
+        if (!logs.length) return alert("Бүртгэл хоосон байна!");
+        let csv = "\uFEFFЦаг,Баркод,Мөр,Барааны нэр,Тоо\n";
+        logs.forEach(l => {
+            csv += `"${l.time}","${l.code}","${l.row}","${l.name}","${l.qty}"\n`;
+        });
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `Inventory_Samsung_${new Date().toISOString().slice(0,10)}.csv`;
+        link.click();
+    }
+
+    // Камераар сканердах тохиргоо
+    const html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
+        fps: 10, 
+        qrbox: { width: 280, height: 160 },
+        aspectRatio: 1.0
+    });
+    
+    html5QrcodeScanner.render((decodedText) => {
+        addBarcode(decodedText);
+    });
+</script>
+</body>
+</html>
