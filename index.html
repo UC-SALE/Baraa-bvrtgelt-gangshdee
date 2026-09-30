@@ -34,9 +34,37 @@
         .badge-danger { background-color: #dc3545; }
         .badge-success { background-color: #198754; }
         .badge-dark { background-color: #000000; } /* Хар өнгө */
+
+        /* Амжилттай бүртгэгдсэн тухай поп-ап мэдэгдэл */
+        .toast-msg {
+            position: fixed;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #198754;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 13px;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            display: none;
+            text-align: center;
+            max-width: 90%;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -10px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
     </style>
 </head>
 <body>
+
+<!-- Амжилттай уншигдсан тохиолдолд гарах мэдэгдэл -->
+<div id="toastMsg" class="toast-msg"></div>
 
 <h2>📱 Samsung Бараа Бүртгэл</h2>
 
@@ -92,6 +120,19 @@
     const ALIASES = { "8656000936034": "8656000936140" };
     let lastScannedCode = "";
     let lastScanTime = 0;
+    let toastTimer = null;
+
+    // Мэдэгдэл харуулах функц
+    function showToast(msg) {
+        const toast = document.getElementById("toastMsg");
+        toast.innerText = msg;
+        toast.style.display = "block";
+        
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+            toast.style.display = "none";
+        }, 2000);
+    }
 
     // Prompt хуулах функц
     function copyPrompt() {
@@ -125,7 +166,8 @@
                     name: parsed[key].name,
                     qty: parsed[key].qty || 0,
                     scanned: 0,
-                    isUnregistered: false
+                    isUnregistered: false,
+                    lastScannedAt: 0 // Сүүлд уншуулсан хугацаа
                 };
             }
             
@@ -162,25 +204,34 @@
         }
 
         const key = findKey(code);
+        let itemObj;
+
         if (key) {
             MASTER_LIST[key].scanned += 1;
+            MASTER_LIST[key].lastScannedAt = now;
+            itemObj = MASTER_LIST[key];
         } else {
             // Бүртгэлгүй бараа олдвол шинээр автоматаар жагсаалтад нэмнэ
             const unregKey = "UNREG_" + code;
             if (MASTER_LIST[unregKey]) {
                 MASTER_LIST[unregKey].scanned += 1;
+                MASTER_LIST[unregKey].lastScannedAt = now;
+                itemObj = MASTER_LIST[unregKey];
             } else {
                 MASTER_LIST[unregKey] = {
                     row: "-",
                     name: `Бүртгэлгүй Илүү бараа (${code})`,
                     qty: 0,
                     scanned: 1,
-                    isUnregistered: true
+                    isUnregistered: true,
+                    lastScannedAt: now
                 };
+                itemObj = MASTER_LIST[unregKey];
             }
         }
         
         renderTable();
+        showToast(`✅ ${itemObj.name} - Амжилттай бүртгэгдлээ!`);
         if (navigator.vibrate) navigator.vibrate(100);
     }
 
@@ -196,8 +247,11 @@
         const keys = Object.keys(MASTER_LIST);
         if (keys.length === 0) return;
 
-        // Мөрийн дугаараар нь эрэмбэлэх (Бүртгэлгүй бараанууд хамгийн доор орно)
+        // ЭРЭМБЭЛЭЛТ: Сүүлд уншуулсан бараануудыг хамгийн дээр, бусдыг мөрийн дугаараар нь жагсаана
         const items = keys.map(k => MASTER_LIST[k]).sort((a, b) => {
+            if (a.lastScannedAt || b.lastScannedAt) {
+                return (b.lastScannedAt || 0) - (a.lastScannedAt || 0);
+            }
             if (typeof a.row === 'number' && typeof b.row === 'number') return a.row - b.row;
             return typeof a.row === 'number' ? -1 : 1;
         });
