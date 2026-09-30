@@ -4,30 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Samsung Бараа Бүртгэл</title>
-    <!-- Камераар баркод унших сан -->
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 15px; margin: 0; background: #f8f9fa; }
-        h2 { text-align: center; color: #1a1a1a; margin-bottom: 15px; }
+        h2 { text-align: center; color: #1a1a1a; margin-bottom: 10px; }
         #reader { width: 100%; max-width: 450px; margin: 0 auto 15px auto; border-radius: 12px; overflow: hidden; background: #000; }
+        .config-box { background: #e9ecef; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; }
         .input-box { display: flex; gap: 8px; margin-bottom: 15px; }
-        input[type="text"] { flex: 1; padding: 14px; font-size: 16px; border: 1px solid #ced4da; border-radius: 8px; outline: none; }
-        button { padding: 14px 18px; font-size: 15px; font-weight: bold; background: #0d6efd; color: white; border: none; border-radius: 8px; }
-        .btn-success { background: #198754; width: 100%; padding: 14px; font-size: 16px; margin-bottom: 20px; }
+        input[type="text"] { flex: 1; padding: 12px; font-size: 16px; border: 1px solid #ced4da; border-radius: 8px; outline: none; }
+        button { padding: 12px 16px; font-size: 14px; font-weight: bold; background: #0d6efd; color: white; border: none; border-radius: 8px; }
+        .btn-success { background: #198754; width: 100%; padding: 14px; font-size: 16px; margin-bottom: 15px; }
         table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         th, td { border-bottom: 1px solid #dee2e6; padding: 10px; text-align: left; font-size: 14px; }
         th { background: #e9ecef; }
-        .success-row { animation: highlight 1.5s ease-out; }
     </style>
 </head>
 <body>
 
 <h2>📱 Samsung Бараа Бүртгэл</h2>
 
-<!-- Утасны камерны цонх -->
+<!-- JSON файл шинээр оруулах хэсэг -->
+<div class="config-box">
+    <b>📂 Мастер жагсаалт шинэчлэх (.json):</b><br>
+    <input type="file" id="jsonInput" accept=".json" onchange="loadJSONFile(event)">
+</div>
+
 <div id="reader"></div>
 
-<!-- Гараар эсвэл залгадаг сканераар оруулдах хэсэг -->
 <div class="input-box">
     <input type="text" id="manualCode" placeholder="Код гараар бичих / Уншуулах" onkeypress="if(event.key==='Enter') handleInput()">
     <button onclick="handleInput()">Нэмэх</button>
@@ -48,7 +51,8 @@
 </table>
 
 <script>
-    const MASTER_LIST = {
+    // Анхны мастер жагсаалт
+    let MASTER_LIST = {
         "8656000340183": {row: 25, name: "FC Бургер Үхрийн махтай 190г", qty: 1},
         "8656000340220": {row: 29, name: "FC Бургер Халуун ногоо, тахианы махтай 215г", qty: 1},
         "8656000340107": {row: 19, name: "FC Сэндвич Хавчны махтай 195г", qty: 1},
@@ -66,13 +70,26 @@
         "8658000253081": {row: 53, name: "Буррито тахианы махтай 240гр", qty: 1}
     };
 
-    const ALIASES = {
-        "8656000936034": "8656000936140"
-    };
-
+    const ALIASES = { "8656000936034": "8656000936140" };
     let logs = [];
     let lastScannedCode = "";
     let lastScanTime = 0;
+
+    // JSON файл оруулан мастер жагсаалтыг шинэчлэх
+    function loadJSONFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                MASTER_LIST = JSON.parse(e.target.result);
+                alert("✅ Мастер жагсаалт амжилттай шинэчлэгдлээ!");
+            } catch (err) {
+                alert("❌ JSON файл буруу байна.");
+            }
+        };
+        reader.readAsText(file);
+    }
 
     function findItem(code) {
         code = code.trim();
@@ -85,7 +102,6 @@
 
     function addBarcode(code) {
         const now = Date.now();
-        // Дараалсан давхардлаас сэргийлэх (1.5 секунд дотор)
         if (code === lastScannedCode && (now - lastScanTime) < 1500) return;
         
         lastScannedCode = code;
@@ -101,7 +117,7 @@
                 qty: item.qty
             });
             renderTable();
-            if (navigator.vibrate) navigator.vibrate(100); // Samsung утас чичирнэ
+            if (navigator.vibrate) navigator.vibrate(100);
         } else {
             alert(`❌ Олдсонгүй: ${code}`);
         }
@@ -136,11 +152,10 @@
         const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = `Inventory_Samsung_${new Date().toISOString().slice(0,10)}.csv`;
+        link.download = `Inventory_${new Date().toISOString().slice(0,10)}.csv`;
         link.click();
     }
 
-    // Камераар сканердах тохиргоо
     const html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
         fps: 10, 
         qrbox: { width: 280, height: 160 },
