@@ -14,6 +14,7 @@
         .ai-section { background: #eef2ff; border: 1px solid #c7d2fe; padding: 12px; border-radius: 10px; margin-bottom: 15px; }
         .ai-title { font-weight: bold; color: #3730a3; margin-bottom: 6px; font-size: 14px; display: flex; align-items: center; justify-content: space-between; }
         .prompt-text { background: #ffffff; padding: 8px 10px; border-radius: 6px; font-size: 12px; color: #4338ca; border: 1px dashed #a5b4fc; margin-bottom: 8px; word-break: break-word; }
+        .instruction-box { font-size: 12px; color: #374151; margin-bottom: 10px; line-height: 1.5; background: #ffffff; padding: 8px 10px; border-radius: 6px; }
         
         textarea { width: 100%; height: 80px; font-family: monospace; font-size: 12px; padding: 8px; border: 1px solid #ced4da; border-radius: 8px; outline: none; box-sizing: border-box; margin-bottom: 8px; resize: vertical; }
         
@@ -24,7 +25,6 @@
         .input-box { display: flex; gap: 8px; margin-bottom: 15px; }
         input[type="text"] { flex: 1; padding: 12px; font-size: 16px; border: 1px solid #ced4da; border-radius: 8px; outline: none; }
         .btn-add { padding: 12px 16px; font-size: 14px; font-weight: bold; background: #0d6efd; color: white; border: none; border-radius: 8px; }
-        .btn-success { background: #198754; width: 100%; padding: 14px; font-size: 16px; margin-bottom: 15px; border: none; color: white; border-radius: 8px; font-weight: bold; }
         
         table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         th, td { border-bottom: 1px solid #dee2e6; padding: 10px; text-align: left; font-size: 14px; }
@@ -35,7 +35,7 @@
 
 <h2>📱 Samsung Бараа Бүртгэл</h2>
 
-<!-- AI Prompt & JSON Текстээр оруулах хэсэг -->
+<!-- AI Заавар & JSON оруулга -->
 <div class="ai-section">
     <div class="ai-title">
         <span>🤖 AI-аар Мастер жагсаалт бэлдэх:</span>
@@ -45,8 +45,14 @@
         Энэ зураг дээрх бараануудыг дараах JSON формат руу хөрвүүлж зөвхөн JSON кодоо буцаагаарай: {"баркод": {"row": мөрийн_дугаар, "name": "барааны_нэр", "qty": тоо_ширхэг}}
     </div>
     
-    <textarea id="jsonTextArea" placeholder="AI-аас гарч ирсэн JSON текстийг энд Paste хийнэ үү..."></textarea>
-    <button class="btn-load" onclick="loadJSONText()">📥 JSON Текстээр Шинэчлэх</button>
+    <div class="instruction-box">
+        <b>Алхам 1:</b> `📋 Prompt Хуулах` товчийг дарж промптоо хуулна.<br>
+        <b>Алхам 2:</b> ChatGPT, Gemini зэрэг AI руу бүртгэлийн хуудасны зурагтайгаа хамт илгээнэ.<br>
+        <b>Алхам 3:</b> AI-аас гарч ирсэн JSON кодоо доорх талбарт буулгана (Paste).
+    </div>
+    
+    <textarea id="jsonTextArea" placeholder="AI-аас гарч ирсэн JSON кодоо энд буулгана уу (Paste)..."></textarea>
+    <button class="btn-load" onclick="loadJSONText()">📥 Мастер жагсаалт ачаалах</button>
 </div>
 
 <!-- Камерны цонх -->
@@ -57,8 +63,6 @@
     <input type="text" id="manualCode" placeholder="Код гараар бичих / Уншуулах" onkeypress="if(event.key==='Enter') handleInput()">
     <button class="btn-add" onclick="handleInput()">Нэмэх</button>
 </div>
-
-<button class="btn-success" onclick="exportCSV()">💾 Excel (CSV) Татаж авах</button>
 
 <h3>Бүртгэгдсэн: <span id="totalCount">0</span> ширхэг</h3>
 <table>
@@ -73,37 +77,19 @@
 </table>
 
 <script>
-    // Анхны мастер жагсаалт
-    let MASTER_LIST = {
-        "8656000340183": {row: 25, name: "FC Бургер Үхрийн махтай 190г", qty: 1},
-        "8656000340220": {row: 29, name: "FC Бургер Халуун ногоо, тахианы махтай 215г", qty: 1},
-        "8656000340107": {row: 19, name: "FC Сэндвич Хавчны махтай 195г", qty: 1},
-        "8656000340329": {row: 34, name: "FC Цуйван 350гр", qty: 1},
-        "8656000340084": {row: 17, name: "FC Сэндвич Туна 165г", qty: 1},
-        "8656000340190": {row: 26, name: "FC Бургер Бекон, үхрийн махтай 210г", qty: 1},
-        "8656000340206": {row: 27, name: "FC Бургер Гахайн махтай 190г", qty: 1},
-        "8656000343210": {row: 35, name: "FC Будаатай хуурга 350г", qty: 1},
-        "8656000340367": {row: 37, name: "FC Чикен Кацу 380г", qty: 1},
-        "8656000340350": {row: 36, name: "FC Булгуги 350г", qty: 1},
-        "8654000250402": {row: 15, name: "Т Хушгатай ороомог монбейкери 70гр", qty: 1},
-        "8656000936157": {row: 44, name: "Халуун ногоотой тахиан махан шорлог 4ш", qty: 4},
-        "8656000936140": {row: 43, name: "Терияки соустай тахиан махан шорлог 4ш", qty: 4},
-        "8658000445919": {row: 55, name: "Буррито гахайн махтай 240гр", qty: 1},
-        "8658000253081": {row: 53, name: "Буррито тахианы махтай 240гр", qty: 1}
-    };
-
+    // Мастер жагсаалт анхнаасаа хоосон байна (Зөвхөн JSON-оос ачаална)
+    let MASTER_LIST = {};
     const ALIASES = { "8656000936034": "8656000936140" };
     let logs = [];
     let lastScannedCode = "";
     let lastScanTime = 0;
 
-    // Prompt текстаас хуулах функц
+    // Prompt хуулах функц
     function copyPrompt() {
         const text = document.getElementById("promptText").innerText.trim();
         navigator.clipboard.writeText(text).then(() => {
-            alert("📋 Prompt амжилттай хуулагдлаа! AI (ChatGPT г.м) руу орж Зургаа оруулаад Paste хийнэ үү.");
+            alert("📋 Prompt амжилттай хуулагдлаа! AI руу орж зургаа оруулаад Paste хийнэ үү.");
         }).catch(() => {
-            // Дэмждэггүй утас/браузер дээр ажиллах fallback
             const dummy = document.createElement("textarea");
             document.body.appendChild(dummy);
             dummy.value = text;
@@ -114,19 +100,18 @@
         });
     }
 
-    // Текстээр буулгасан JSON-ийг уншиж мастер жагсаалтыг шинэчлэх
+    // Текстээр буулгасан JSON-ийг ачаалах
     function loadJSONText() {
         const rawText = document.getElementById("jsonTextArea").value.trim();
-        if (!rawText) return alert("❌ JSON текстээ эхлээд буулгана уу!");
+        if (!rawText) return alert("❌ JSON кодоо эхлээд буулгана уу!");
         
         try {
-            // AI-аас ирсэн код блокийн тэмдэглэгээг (```json ... ```) цэвэрлэх
             let cleanedText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
             MASTER_LIST = JSON.parse(cleanedText);
-            alert("✅ Мастер жагсаалт амжилттай шинэчлэгдлээ!");
+            alert("✅ Мастер жагсаалт амжилттай ачаалагдлаа! Одоо баркодоо уншуулж болно.");
             document.getElementById("jsonTextArea").value = "";
         } catch (err) {
-            alert("❌ JSON форматад алдаа байна. AI-аас ирсэн текстийг бүрэн эсэхийг шалгаарай.");
+            alert("❌ JSON форматад алдаа байна. AI-аас ирсэн кодоо бүрэн хуулсан эсэхээ шалгаарай.");
         }
     }
 
@@ -140,14 +125,28 @@
     }
 
     function addBarcode(code) {
+        code = code.trim();
         const now = Date.now();
         if (code === lastScannedCode && (now - lastScanTime) < 1500) return;
         
         lastScannedCode = code;
         lastScanTime = now;
 
+        // Мастер жагсаалт оруулаагүй бол сануулна
+        if (Object.keys(MASTER_LIST).length === 0) {
+            alert("❌ Мастер жагсаалт хоосон байна! Эхлээд AI-ийн JSON кодоо оруулж шинэчилнэ үү.");
+            return;
+        }
+
         const item = findItem(code);
         if (item) {
+            // Бараа давхар бүртгэгдэхээс сэргийлэх шалгалт
+            const isAlreadyAdded = logs.some(l => l.code === code || l.row === item.row);
+            if (isAlreadyAdded) {
+                alert(`⚠️ [Мөр ${item.row}] ${item.name} - Хэдийн бүртгэгдсэн байна!`);
+                return;
+            }
+
             logs.unshift({
                 time: new Date().toLocaleTimeString(),
                 code: code,
@@ -158,7 +157,7 @@
             renderTable();
             if (navigator.vibrate) navigator.vibrate(100);
         } else {
-            alert(`❌ Олдсонгүй: ${code}`);
+            alert(`❌ Мастер жагсаалтад олдсонгүй: ${code}`);
         }
     }
 
@@ -180,19 +179,6 @@
                 <td>${l.qty}ш</td>
             </tr>
         `).join("");
-    }
-
-    function exportCSV() {
-        if (!logs.length) return alert("Бүртгэл хоосон байна!");
-        let csv = "\uFEFFЦаг,Баркод,Мөр,Барааны нэр,Тоо\n";
-        logs.forEach(l => {
-            csv += `"${l.time}","${l.code}","${l.row}","${l.name}","${l.qty}"\n`;
-        });
-        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `Inventory_${new Date().toISOString().slice(0,10)}.csv`;
-        link.click();
     }
 
     const html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
