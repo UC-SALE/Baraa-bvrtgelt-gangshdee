@@ -33,6 +33,7 @@
         .badge { padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; color: white; display: inline-block; text-align: center; }
         .badge-danger { background-color: #dc3545; }
         .badge-success { background-color: #198754; }
+        .badge-dark { background-color: #000000; } /* Хар өнгө */
     </style>
 </head>
 <body>
@@ -74,9 +75,9 @@
         <tr>
             <th style="width: 35px;">Мөр</th>
             <th>Барааны нэр</th>
-            <th style="text-align: center; width: 45px;">Зах.</th>
-            <th style="text-align: center; width: 45px;">Унш.</th>
-            <th style="text-align: center; width: 55px;">Төлөв</th>
+            <th style="text-align: center; width: 40px;">Зах.</th>
+            <th style="text-align: center; width: 40px;">Унш.</th>
+            <th style="text-align: center; width: 65px;">Төлөв</th>
         </tr>
     </thead>
     <tbody id="logTable">
@@ -123,7 +124,8 @@
                     row: parsed[key].row,
                     name: parsed[key].name,
                     qty: parsed[key].qty || 0,
-                    scanned: 0 // Уншуулсан тоог 0-ээс эхлүүлнэ
+                    scanned: 0,
+                    isUnregistered: false
                 };
             }
             
@@ -161,13 +163,25 @@
 
         const key = findKey(code);
         if (key) {
-            // Уншуулсан тоог 1-ээр нэмэгдүүлнэ (Давхар уншуулж болно)
             MASTER_LIST[key].scanned += 1;
-            renderTable();
-            if (navigator.vibrate) navigator.vibrate(100);
         } else {
-            alert(`❌ Мастер жагсаалтад олдсонгүй: ${code}`);
+            // Бүртгэлгүй бараа олдвол шинээр автоматаар жагсаалтад нэмнэ
+            const unregKey = "UNREG_" + code;
+            if (MASTER_LIST[unregKey]) {
+                MASTER_LIST[unregKey].scanned += 1;
+            } else {
+                MASTER_LIST[unregKey] = {
+                    row: "-",
+                    name: `Бүртгэлгүй Илүү бараа (${code})`,
+                    qty: 0,
+                    scanned: 1,
+                    isUnregistered: true
+                };
+            }
         }
+        
+        renderTable();
+        if (navigator.vibrate) navigator.vibrate(100);
     }
 
     function handleInput() {
@@ -182,8 +196,11 @@
         const keys = Object.keys(MASTER_LIST);
         if (keys.length === 0) return;
 
-        // Мөрийн дугаараар нь эрэмбэлэх
-        const items = keys.map(k => MASTER_LIST[k]).sort((a, b) => a.row - b.row);
+        // Мөрийн дугаараар нь эрэмбэлэх (Бүртгэлгүй бараанууд хамгийн доор орно)
+        const items = keys.map(k => MASTER_LIST[k]).sort((a, b) => {
+            if (typeof a.row === 'number' && typeof b.row === 'number') return a.row - b.row;
+            return typeof a.row === 'number' ? -1 : 1;
+        });
 
         let totalScanned = 0;
         let totalTarget = 0;
@@ -192,17 +209,40 @@
             totalScanned += item.scanned;
             totalTarget += item.qty;
 
-            const isComplete = item.scanned >= item.qty && item.qty > 0;
-            const statusText = isComplete ? "Бүрэн" : "Дутуу";
-            const badgeClass = isComplete ? "badge-success" : "badge-danger";
-            const rowBg = isComplete ? "#f0fff4" : "#ffffff";
+            let statusText = "Дутуу";
+            let badgeClass = "badge-danger";
+            let rowBg = "#ffffff";
+            let textColor = "#dc3545";
+
+            // Бүртгэлгүй эсвэл Захиалснаас илүү барааны төлөв
+            if (item.isUnregistered) {
+                statusText = "Бүртгэлгүй";
+                badgeClass = "badge-dark"; // Хар өнгө
+                rowBg = "#f1f3f5";
+                textColor = "#000000"; // Хар өнгө
+            } else if (item.scanned > item.qty) {
+                statusText = "Илүү бараа";
+                badgeClass = "badge-dark"; // Хар өнгө
+                rowBg = "#f1f3f5";
+                textColor = "#000000"; // Хар өнгө
+            } else if (item.scanned === item.qty && item.qty > 0) {
+                statusText = "Бүрэн";
+                badgeClass = "badge-success";
+                rowBg = "#f0fff4";
+                textColor = "#198754";
+            } else {
+                statusText = "Дутуу";
+                badgeClass = "badge-danger";
+                rowBg = "#ffffff";
+                textColor = "#dc3545";
+            }
 
             return `
                 <tr style="background-color: ${rowBg};">
                     <td><b>${item.row}</b></td>
                     <td>${item.name}</td>
                     <td style="text-align: center;">${item.qty}</td>
-                    <td style="text-align: center; font-weight: bold; font-size: 15px; color: ${isComplete ? '#198754' : '#dc3545'};">
+                    <td style="text-align: center; font-weight: bold; font-size: 15px; color: ${textColor};">
                         ${item.scanned}
                     </td>
                     <td style="text-align: center;">
@@ -228,4 +268,3 @@
 </script>
 </body>
 </html>
-
