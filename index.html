@@ -16,26 +16,46 @@
         .prompt-text { background: #ffffff; padding: 8px 10px; border-radius: 6px; font-size: 11px; color: #4338ca; border: 1px dashed #a5b4fc; margin-bottom: 8px; word-break: break-word; }
         .instruction-box { font-size: 12px; color: #374151; margin-bottom: 10px; line-height: 1.4; background: #ffffff; padding: 8px 10px; border-radius: 6px; }
         
-        textarea { width: 100%; height: 75px; font-family: monospace; font-size: 12px; padding: 8px; border: 1px solid #ced4da; border-radius: 8px; outline: none; box-sizing: border-box; margin-bottom: 8px; resize: vertical; }
+        textarea { width: 100%; height: 70px; font-family: monospace; font-size: 12px; padding: 8px; border: 1px solid #ced4da; border-radius: 8px; outline: none; box-sizing: border-box; margin-bottom: 8px; resize: vertical; }
         
         .btn-prompt { background: #4f46e5; color: white; border: none; padding: 6px 10px; font-size: 11px; border-radius: 6px; font-weight: bold; cursor: pointer; }
         .btn-load { background: #0d6efd; color: white; border: none; padding: 10px; width: 100%; font-size: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; }
         
-        #reader { width: 100%; max-width: 450px; min-height: 200px; margin: 0 auto 15px auto; border-radius: 12px; overflow: hidden; background: #000; position: relative; }
+        #reader { width: 100%; max-width: 450px; min-height: 180px; margin: 0 auto 10px auto; border-radius: 12px; overflow: hidden; background: #000; position: relative; }
         .cam-btn { display: block; margin: 10px auto; padding: 8px 16px; background: #198754; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
         
+        /* Сканнердсан барааг баталгаажуулах том хэсэг */
+        .stage-box { background: #fff3cd; border: 2px solid #ffecb5; padding: 12px; border-radius: 10px; text-align: center; margin-bottom: 15px; }
+        .stage-title { font-size: 12px; color: #664d03; font-weight: bold; }
+        .stage-item { font-size: 16px; font-weight: bold; color: #000; margin: 6px 0; word-break: break-word; }
+        .btn-commit { width: 100%; padding: 16px; font-size: 18px; font-weight: bold; background: #198754; color: white; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 10px rgba(25, 135, 84, 0.3); transition: transform 0.1s; }
+        .btn-commit:active { transform: scale(0.98); }
+        .btn-commit:disabled { background: #6c757d; opacity: 0.6; box-shadow: none; cursor: not-allowed; }
+
         .input-box { display: flex; gap: 8px; margin-bottom: 15px; }
-        input[type="text"] { flex: 1; padding: 12px; font-size: 15px; border: 1px solid #ced4da; border-radius: 8px; outline: none; }
-        .btn-add { padding: 12px 16px; font-size: 14px; font-weight: bold; background: #0d6efd; color: white; border: none; border-radius: 8px; }
+        input[type="text"] { flex: 1; padding: 10px 12px; font-size: 14px; border: 1px solid #ced4da; border-radius: 8px; outline: none; }
+        .btn-add { padding: 10px 16px; font-size: 14px; font-weight: bold; background: #0d6efd; color: white; border: none; border-radius: 8px; cursor: pointer; }
         
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 13px; }
-        th, td { border-bottom: 1px solid #dee2e6; padding: 8px 6px; text-align: left; }
-        th { background: #e9ecef; font-size: 12px; }
+        /* Таб болон хайх хэсэг */
+        .filter-section { margin-bottom: 12px; }
+        .search-input { width: 100%; box-sizing: border-box; padding: 8px 12px; margin-bottom: 8px; border: 1px solid #ced4da; border-radius: 6px; font-size: 13px; }
+        .tab-group { display: flex; gap: 4px; background: #e9ecef; padding: 4px; border-radius: 8px; }
+        .tab-btn { flex: 1; border: none; background: transparent; padding: 8px 4px; font-size: 11px; font-weight: bold; border-radius: 6px; cursor: pointer; color: #495057; text-align: center; }
+        .tab-btn.active { background: white; color: #0d6efd; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 12px; }
+        th, td { border-bottom: 1px solid #dee2e6; padding: 6px 4px; text-align: left; vertical-align: middle; }
+        th { background: #e9ecef; font-size: 11px; }
         
-        .badge { padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; color: white; display: inline-block; text-align: center; }
+        .badge { padding: 3px 6px; border-radius: 12px; font-size: 10px; font-weight: bold; color: white; display: inline-block; text-align: center; }
         .badge-danger { background-color: #dc3545; }
         .badge-success { background-color: #198754; }
         .badge-dark { background-color: #000000; }
+
+        /* Тоо ширхэг засах тохируулга */
+        .qty-ctrl { display: flex; align-items: center; justify-content: center; gap: 2px; }
+        .btn-qty { width: 24px; height: 24px; border: 1px solid #adb5bd; background: #f8f9fa; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 13px; line-height: 1; display: flex; align-items: center; justify-content: center; }
+        .qty-input { width: 34px; text-align: center; font-size: 14px; font-weight: bold; border: 1px solid #ced4da; border-radius: 4px; padding: 2px 0; outline: none; }
 
         /* Амжилттай бүртгэгдсэн тухай поп-ап мэдэгдэл */
         .toast-msg {
@@ -65,7 +85,6 @@
 </head>
 <body>
 
-<!-- Амжилттай уншигдсан тохиолдолд гарах мэдэгдэл -->
 <div id="toastMsg" class="toast-msg"></div>
 
 <h2>📱 Samsung Бараа Бүртгэл</h2>
@@ -94,21 +113,43 @@
 <div id="reader"></div>
 <button id="retryCamBtn" class="cam-btn" onclick="initCamera()" style="display:none;">📷 Камер дахин асаах</button>
 
-<!-- Гараар болон залгадаг сканераар оруулах -->
-<div class="input-box">
-    <input type="text" id="manualCode" placeholder="Код гараар бичих / Уншуулах" onkeypress="if(event.key==='Enter') handleInput()">
-    <button class="btn-add" onclick="handleInput()">Нэмэх</button>
+<!-- Камерт илэрсэн барааг баталгаажуулж нэмэх том товч -->
+<div class="stage-box">
+    <div class="stage-title">📸 Камерт харагдаж буй бараа:</div>
+    <div id="stagedItemText" class="stage-item">Баркод уншуулаагүй байна...</div>
+    <button id="commitBtn" class="btn-commit" onclick="commitStagedBarcode()" disabled>
+        🔔 БҮРТГЭХ (+1)
+    </button>
 </div>
 
-<h3 style="margin-bottom: 8px;">Нийт: <span id="totalCount">0 / 0</span> ш</h3>
+<!-- Гараар болон залгадаг сканераар оруулах -->
+<div class="input-box">
+    <input type="text" id="manualCode" placeholder="Код гараар бичих / Сканераар уншуулах" onkeypress="if(event.key==='Enter') handleManualInput()">
+    <button class="btn-add" onclick="handleManualInput()">Нэмэх</button>
+</div>
+
+<!-- Хайлт болон Табууд -->
+<div class="filter-section">
+    <input type="text" id="searchInput" class="search-input" placeholder="🔍 Барааны нэр эсвэл кодоор хайх..." oninput="renderTable()">
+    
+    <div class="tab-group">
+        <button class="tab-btn" id="tab-all" onclick="setTab('all')">📋 Бүгд</button>
+        <button class="tab-btn active" id="tab-missing" onclick="setTab('missing')">⏳ Дутуу</button>
+        <button class="tab-btn" id="tab-done" onclick="setTab('done')">✅ Бүрэн/Бүртгэгдсэн</button>
+        <button class="tab-btn" id="tab-unreg" onclick="setTab('unreg')">⚠️ Бүртгэлгүй</button>
+    </div>
+</div>
+
+<h3 style="margin-bottom: 8px; font-size: 15px;">Нийт: <span id="totalCount">0 / 0</span> ш</h3>
+
 <table>
     <thead>
         <tr>
-            <th style="width: 35px;">Мөр</th>
+            <th style="width: 30px;">Мөр</th>
             <th>Барааны нэр</th>
-            <th style="text-align: center; width: 40px;">Зах.</th>
-            <th style="text-align: center; width: 40px;">Унш.</th>
-            <th style="text-align: center; width: 65px;">Төлөв</th>
+            <th style="text-align: center; width: 35px;">Зах.</th>
+            <th style="text-align: center; width: 95px;">Унш.</th>
+            <th style="text-align: center; width: 60px;">Төлөв</th>
         </tr>
     </thead>
     <tbody id="logTable">
@@ -121,17 +162,35 @@
 <script>
     let MASTER_LIST = {};
     const ALIASES = { "8656000936034": "8656000936140" };
-    let lastScannedCode = "";
-    let lastScanTime = 0;
     let toastTimer = null;
     let html5QrCode = null;
+    
+    let stagedCode = "";
+    let activeTab = "missing"; // Үндсэн харагдах таб: Дутуу
+
+    // Web Audio API ашиглаж Beep дуу гаргах
+    function playBeep() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = "sine";
+            osc.frequency.value = 1200; // Тон
+            gain.gain.value = 0.3;
+            osc.start();
+            osc.stop(ctx.currentTime + 0.12); // 120ms үргэлжилнэ
+        } catch(e) {
+            console.log("Audio contexts error:", e);
+        }
+    }
 
     // HTTPS шалгалт
     if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-        alert("⚠️ Анхаар: Вэб браузер аюулгүй байдлын үүднээс заавал HTTPS холболт дээр камер нээхийг зөвшөөрдөг. Хэрэв камер ажиллахгүй бол HTTPS холболттой орчинд ажиллуулна уу.");
+        alert("⚠️ Анхаар: Браузер заавал HTTPS холболт дээр камер нээхийг зөвшөөрдөг.");
     }
 
-    // Мэдэгдэл харуулах функц
     function showToast(msg) {
         const toast = document.getElementById("toastMsg");
         toast.innerText = msg;
@@ -143,11 +202,10 @@
         }, 2000);
     }
 
-    // Prompt хуулах функц
     function copyPrompt() {
         const text = document.getElementById("promptText").innerText.trim();
         navigator.clipboard.writeText(text).then(() => {
-            alert("📋 Prompt амжилттай хуулагдлаа! AI руу орж зургаа оруулаад Paste хийнэ үү.");
+            alert("📋 Prompt амжилттай хуулагдлаа!");
         }).catch(() => {
             const dummy = document.createElement("textarea");
             document.body.appendChild(dummy);
@@ -159,7 +217,6 @@
         });
     }
 
-    // Текстээр буулгасан JSON-ийг ачаалах
     function loadJSONText() {
         const rawText = document.getElementById("jsonTextArea").value.trim();
         if (!rawText) return alert("❌ JSON кодоо эхлээд буулгана уу!");
@@ -197,14 +254,45 @@
         return null;
     }
 
-    function addBarcode(code) {
+    // Камерт код уншигдахад БЭЛДЭХ (Шууд тоо нэмэхгүй)
+    function stageBarcode(code) {
+        code = code.trim();
+        if (!code) return;
+
+        stagedCode = code;
+        const key = findKey(code);
+        let itemName = "";
+
+        if (key) {
+            itemName = MASTER_LIST[key].name;
+        } else if (MASTER_LIST["UNREG_" + code]) {
+            itemName = MASTER_LIST["UNREG_" + code].name;
+        } else {
+            itemName = `Бүртгэлгүй шинэ бараа (${code})`;
+        }
+
+        document.getElementById("stagedItemText").innerText = itemName;
+        document.getElementById("commitBtn").disabled = false;
+    }
+
+    // БҮРТГЭХ товч дээр дарахад сая тоог нэмж Beep дуургана
+    function commitStagedBarcode() {
+        if (!stagedCode) return;
+        addBarcodeCount(stagedCode);
+    }
+
+    function handleManualInput() {
+        const inp = document.getElementById("manualCode");
+        if (inp.value) {
+            addBarcodeCount(inp.value);
+            inp.value = "";
+        }
+    }
+
+    // Барааны тоог баталгаажуулж нэмэх
+    function addBarcodeCount(code) {
         code = code.trim();
         const now = Date.now();
-        
-        if (code === lastScannedCode && (now - lastScanTime) < 800) return;
-        
-        lastScannedCode = code;
-        lastScanTime = now;
 
         if (Object.keys(MASTER_LIST).length === 0) {
             alert("❌ Эхлээд AI-ийн JSON кодоо оруулж жагсаалтаа ачаална уу!");
@@ -237,24 +325,67 @@
             }
         }
         
-        renderTable();
-        showToast(`✅ ${itemObj.name} - Амжилттай бүртгэгдлээ!`);
+        playBeep(); // Beep чимээ ажиллана
+        showToast(`✅ ${itemObj.name} (+1 нэмэгдлээ)`);
         if (navigator.vibrate) navigator.vibrate(100);
+
+        renderTable();
     }
 
-    function handleInput() {
-        const inp = document.getElementById("manualCode");
-        if (inp.value) {
-            addBarcode(inp.value);
-            inp.value = "";
+    // Тоог - ба + товчоор болон шууд засах функцууд
+    function changeQty(key, delta) {
+        if (MASTER_LIST[key]) {
+            MASTER_LIST[key].scanned = Math.max(0, MASTER_LIST[key].scanned + delta);
+            MASTER_LIST[key].lastScannedAt = Date.now();
+            renderTable();
         }
+    }
+
+    function setQtyDirect(key, value) {
+        let val = parseInt(value, 10);
+        if (isNaN(val) || val < 0) val = 0;
+        if (MASTER_LIST[key]) {
+            MASTER_LIST[key].scanned = val;
+            MASTER_LIST[key].lastScannedAt = Date.now();
+            renderTable();
+        }
+    }
+
+    // Таб шилжүүлэх
+    function setTab(tabName) {
+        activeTab = tabName;
+        document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+        document.getElementById("tab-" + tabName).classList.add("active");
+        renderTable();
     }
 
     function renderTable() {
         const keys = Object.keys(MASTER_LIST);
         if (keys.length === 0) return;
 
-        const items = keys.map(k => MASTER_LIST[k]).sort((a, b) => {
+        const searchQuery = document.getElementById("searchInput").value.toLowerCase().trim();
+
+        // Ангилах, хайх шүүлтүүр
+        let filteredKeys = keys.filter(k => {
+            const item = MASTER_LIST[k];
+            
+            // Хайлтын текстийн дагуу
+            const matchesSearch = item.name.toLowerCase().includes(searchQuery) || k.toLowerCase().includes(searchQuery);
+            if (!matchesSearch) return false;
+
+            // Табын дагуу
+            if (activeTab === "missing") {
+                return !item.isUnregistered && item.scanned < item.qty;
+            } else if (activeTab === "done") {
+                return !item.isUnregistered && item.scanned >= item.qty && item.qty > 0;
+            } else if (activeTab === "unreg") {
+                return item.isUnregistered || item.scanned > item.qty;
+            }
+            return true; // "all"
+        });
+
+        // Сүүлд уншуулсныг хамгийн дээр эрэмбэлэх
+        const itemsWithKey = filteredKeys.map(k => ({ key: k, ...MASTER_LIST[k] })).sort((a, b) => {
             if (a.lastScannedAt || b.lastScannedAt) {
                 return (b.lastScannedAt || 0) - (a.lastScannedAt || 0);
             }
@@ -265,10 +396,21 @@
         let totalScanned = 0;
         let totalTarget = 0;
 
-        let html = items.map(item => {
-            totalScanned += item.scanned;
-            totalTarget += item.qty;
+        // Нийт дүнг бүх бараанаас тооцоолно
+        keys.forEach(k => {
+            totalScanned += MASTER_LIST[k].scanned;
+            totalTarget += MASTER_LIST[k].qty;
+        });
 
+        if (itemsWithKey.length === 0) {
+            document.getElementById("logTable").innerHTML = `
+                <tr><td colspan="5" style="text-align:center; color:#888; padding:15px;">Энэ хэсэгт бараа олдсонгүй.</td></tr>
+            `;
+            document.getElementById("totalCount").innerText = `${totalScanned} / ${totalTarget}`;
+            return;
+        }
+
+        let html = itemsWithKey.map(item => {
             let statusText = "Дутуу";
             let badgeClass = "badge-danger";
             let rowBg = "#ffffff";
@@ -280,7 +422,7 @@
                 rowBg = "#f1f3f5";
                 textColor = "#000000";
             } else if (item.scanned > item.qty) {
-                statusText = "Илүү бараа";
+                statusText = "Илүү";
                 badgeClass = "badge-dark";
                 rowBg = "#f1f3f5";
                 textColor = "#000000";
@@ -289,11 +431,6 @@
                 badgeClass = "badge-success";
                 rowBg = "#f0fff4";
                 textColor = "#198754";
-            } else {
-                statusText = "Дутуу";
-                badgeClass = "badge-danger";
-                rowBg = "#ffffff";
-                textColor = "#dc3545";
             }
 
             return `
@@ -301,71 +438,7 @@
                     <td><b>${item.row}</b></td>
                     <td>${item.name}</td>
                     <td style="text-align: center;">${item.qty}</td>
-                    <td style="text-align: center; font-weight: bold; font-size: 15px; color: ${textColor};">
-                        ${item.scanned}
-                    </td>
-                    <td style="text-align: center;">
-                        <span class="badge ${badgeClass}">${statusText}</span>
-                    </td>
-                </tr>
-            `;
-        }).join("");
-
-        document.getElementById("logTable").innerHTML = html;
-        document.getElementById("totalCount").innerText = `${totalScanned} / ${totalTarget}`;
-    }
-
-    // Камер идэвхжүүлэх зассан логик
-    async function initCamera() {
-        const retryBtn = document.getElementById("retryCamBtn");
-        retryBtn.style.display = "none";
-
-        if (!html5QrCode) {
-            html5QrCode = new Html5Qrcode("reader");
-        }
-
-        const config = { 
-            fps: 10, 
-            qrbox: { width: 260, height: 150 },
-            aspectRatio: 1.0
-        };
-
-        // 1-р оролдлого: Арын камер (environment) ашиглах
-        html5QrCode.start(
-            { facingMode: "environment" }, 
-            config, 
-            (decodedText) => addBarcode(decodedText),
-            (errorMessage) => {}
-        ).catch(async (err) => {
-            console.warn("FacingMode орчноор нээгдсэнгүй, төхөөрөмжийн жагсаалтаар үзэж байна:", err);
-            
-            // 2-р оролдлого: Төхөөрөмжийн камеруудыг жагсааж сүүлийн (арын) камерыг нээх
-            try {
-                const devices = await Html5Qrcode.getCameras();
-                if (devices && devices.length > 0) {
-                    const backCamera = devices[devices.length - 1]; // Ихэвчлэн сүүлчийнх нь арын камер байдаг
-                    await html5QrCode.start(
-                        backCamera.id, 
-                        config, 
-                        (decodedText) => addBarcode(decodedText),
-                        (errorMessage) => {}
-                    );
-                } else {
-                    alert("❌ Камер олдсонгүй! Та утасныхаа веб хөтчийн камерын зөвшөөрлийг шалгана уу.");
-                    retryBtn.style.display = "block";
-                }
-            } catch (e) {
-                console.error("Камер ачаалахад алдаа гарлаа:", e);
-                alert("❌ Камерын хандалтад алдаа гарлаа: " + (e.message || e));
-                retryBtn.style.display = "block";
-            }
-        });
-    }
-
-    // Хуудас ачаалагдахад камер эхлүүлэх
-    window.addEventListener("DOMContentLoaded", () => {
-        initCamera();
-    });
-</script>
-</body>
-</html>
+                    <td>
+                        <div class="qty-ctrl">
+                            <button class="btn-qty" onclick="changeQty('${item.key}', -1)">-</button>
+                            
