@@ -52,12 +52,10 @@
         .badge-success { background-color: #198754; }
         .badge-dark { background-color: #000000; }
 
-        /* Тоо ширхэг засах тохируулга */
         .qty-ctrl { display: flex; align-items: center; justify-content: center; gap: 2px; }
         .btn-qty { width: 24px; height: 24px; border: 1px solid #adb5bd; background: #f8f9fa; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 13px; line-height: 1; display: flex; align-items: center; justify-content: center; }
         .qty-input { width: 34px; text-align: center; font-size: 14px; font-weight: bold; border: 1px solid #ced4da; border-radius: 4px; padding: 2px 0; outline: none; }
 
-        /* Амжилттай бүртгэгдсэн тухай поп-ап мэдэгдэл */
         .toast-msg {
             position: fixed;
             top: 15px;
@@ -164,60 +162,69 @@
     const ALIASES = { "8656000936034": "8656000936140" };
     let toastTimer = null;
     let html5QrCode = null;
+    let isScanning = false;
+    let audioCtx = null;
     
     let stagedCode = "";
     let activeTab = "missing";
 
-    // Web Audio API ашиглаж Beep дуу гаргах
+    // Web Audio API Beep
     function playBeep() {
         try {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
             osc.connect(gain);
-            gain.connect(ctx.destination);
+            gain.connect(audioCtx.destination);
             osc.type = "sine";
             osc.frequency.value = 1200;
             gain.gain.value = 0.3;
             osc.start();
-            osc.stop(ctx.currentTime + 0.12);
+            osc.stop(audioCtx.currentTime + 0.12);
         } catch(e) {
-            console.log("Audio context error:", e);
+            console.log("Audio contexts error:", e);
         }
     }
 
-    // HTTPS шалгалт
-    if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-        alert("⚠️ Анхаар: Браузер заавал HTTPS холболт дээр камер нээхийг зөвшөөрдөг.");
-    }
-
-    // Камер эхлүүлэх функц
-    function initCamera() {
+    // Камер эхлүүлэх ба хамгаалалтын функц
+    async function initCamera() {
         const retryBtn = document.getElementById("retryCamBtn");
-        
-        if (html5QrCode) {
-            html5QrCode.stop().then(() => startScanner()).catch(() => startScanner());
-        } else {
-            startScanner();
-        }
+        if (retryBtn) retryBtn.style.display = "none";
 
-        function startScanner() {
-            html5QrCode = new Html5Qrcode("reader");
+        try {
+            if (!html5QrCode) {
+                html5QrCode = new Html5Qrcode("reader");
+            }
+
+            if (isScanning) {
+                await html5QrCode.stop();
+                isScanning = false;
+            }
+
             const config = { fps: 10, qrbox: { width: 250, height: 150 } };
 
-            html5QrCode.start(
-                { facingMode: "environment" },
-                config,
-                (decodedText) => {
+            // Арын камерыг эхэлж оролдох, бүтэхгүй бол ямар ч хамаагүй камер нээх
+            try {
+                await html5QrCode.start({ facingMode: "environment" }, config, (decodedText) => {
                     stageBarcode(decodedText);
-                },
-                (errorMessage) => {
-                    // Scanning status...
-                }
-            ).catch(err => {
-                console.error("Camera start error:", err);
-                retryBtn.style.display = "block";
-            });
+                });
+                isScanning = true;
+            } catch (envErr) {
+                console.warn("Арын камер ажилласангүй, ерөнхий камер туршиж байна...", envErr);
+                await html5QrCode.start({ facingMode: "user" }, config, (decodedText) => {
+                    stageBarcode(decodedText);
+                });
+                isScanning = true;
+            }
+        } catch (err) {
+            console.error("Камерын алдаа:", err);
+            if (retryBtn) retryBtn.style.display = "block";
+            document.getElementById("stagedItemText").innerText = "⚠️ Камер нээх боломжгүй байна. Браузерын зөвшөөрлийг шалгана уу.";
         }
     }
 
@@ -232,19 +239,31 @@
         }, 2000);
     }
 
+    // Промпт хуулах аюулгүй функц (HTTP ба HTTPS бүгдэд ажиллана)
     function copyPrompt() {
         const text = document.getElementById("promptText").innerText.trim();
-        navigator.clipboard.writeText(text).then(() => {
-            alert("📋 Prompt амжилттай хуулагдлаа!");
-        }).catch(() => {
+        
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("📋 Prompt амжилттай хуулагдлаа!");
+            }).catch(() => fallbackCopy(text));
+        } else {
+            fallbackCopy(text);
+        }
+    }
+
+    function fallbackCopy(text) {
+        try {
             const dummy = document.createElement("textarea");
             document.body.appendChild(dummy);
             dummy.value = text;
             dummy.select();
             document.execCommand("copy");
             document.body.removeChild(dummy);
-            alert("📋 Prompt хуулагдлаа!");
-        });
+            showToast("📋 Prompt амжилттай хуулагдлаа!");
+        } catch (e) {
+            alert("❌ Хуулж чадсангүй. Текстийг гараар сонгож хуулна уу.");
+        }
     }
 
     function loadJSONText() {
@@ -252,7 +271,13 @@
         if (!rawText) return alert("❌ JSON кодоо эхлээд буулгана уу!");
         
         try {
-            let cleanedText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
+            // Markdown эсвэл нэмэлт тэмдэгтүүдийг цэвэрлэх
+            let cleanedText = rawText;
+            const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                cleanedText = jsonMatch[0];
+            }
+            
             const parsed = JSON.parse(cleanedText);
             
             MASTER_LIST = {};
@@ -267,7 +292,7 @@
                 };
             }
             
-            alert("✅ Мастер жагсаалт амжилттай ачаалагдлаа!");
+            showToast("✅ Мастер жагсаалт ачаалагдлаа!");
             document.getElementById("jsonTextArea").value = "";
             renderTable();
         } catch (err) {
@@ -452,24 +477,4 @@
             return `
                 <tr style="background-color: ${rowBg};">
                     <td><b>${item.row}</b></td>
-                    <td>${item.name}</td>
-                    <td style="text-align: center;">${item.qty}</td>
-                    <td>
-                        <div class="qty-ctrl">
-                            <button class="btn-qty" onclick="changeQty('${item.key}', -1)">-</button>
-                            <input type="number" class="qty-input" value="${item.scanned}" onchange="setQtyDirect('${item.key}', this.value)">
-                            <button class="btn-qty" onclick="changeQty('${item.key}', 1)">+</button>
-                        </div>
-                    </td>
-                    <td style="text-align: center;">
-                        <span class="badge ${badgeClass}">${statusText}</span>
-                    </td>
-                </tr>
-            `;
-        }).join("");
-
-        document.getElementById("logTable").innerHTML = html;
-        document.getElementById("totalCount").innerText = `${totalScanned} / ${totalTarget}`;
-    }
-
-    
+                    <td>${item.name}</
