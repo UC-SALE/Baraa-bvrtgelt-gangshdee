@@ -166,7 +166,7 @@
     let html5QrCode = null;
     
     let stagedCode = "";
-    let activeTab = "missing"; // Үндсэн харагдах таб: Дутуу
+    let activeTab = "missing";
 
     // Web Audio API ашиглаж Beep дуу гаргах
     function playBeep() {
@@ -177,18 +177,48 @@
             osc.connect(gain);
             gain.connect(ctx.destination);
             osc.type = "sine";
-            osc.frequency.value = 1200; // Тон
+            osc.frequency.value = 1200;
             gain.gain.value = 0.3;
             osc.start();
-            osc.stop(ctx.currentTime + 0.12); // 120ms үргэлжилнэ
+            osc.stop(ctx.currentTime + 0.12);
         } catch(e) {
-            console.log("Audio contexts error:", e);
+            console.log("Audio context error:", e);
         }
     }
 
     // HTTPS шалгалт
     if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
         alert("⚠️ Анхаар: Браузер заавал HTTPS холболт дээр камер нээхийг зөвшөөрдөг.");
+    }
+
+    // Камер эхлүүлэх функц
+    function initCamera() {
+        const retryBtn = document.getElementById("retryCamBtn");
+        
+        if (html5QrCode) {
+            html5QrCode.stop().then(() => startScanner()).catch(() => startScanner());
+        } else {
+            startScanner();
+        }
+
+        function startScanner() {
+            html5QrCode = new Html5Qrcode("reader");
+            const config = { fps: 10, qrbox: { width: 250, height: 150 } };
+
+            html5QrCode.start(
+                { facingMode: "environment" },
+                config,
+                (decodedText) => {
+                    stageBarcode(decodedText);
+                },
+                (errorMessage) => {
+                    // Scanning status...
+                }
+            ).catch(err => {
+                console.error("Camera start error:", err);
+                retryBtn.style.display = "block";
+            });
+        }
     }
 
     function showToast(msg) {
@@ -254,7 +284,6 @@
         return null;
     }
 
-    // Камерт код уншигдахад БЭЛДЭХ (Шууд тоо нэмэхгүй)
     function stageBarcode(code) {
         code = code.trim();
         if (!code) return;
@@ -275,7 +304,6 @@
         document.getElementById("commitBtn").disabled = false;
     }
 
-    // БҮРТГЭХ товч дээр дарахад сая тоог нэмж Beep дуургана
     function commitStagedBarcode() {
         if (!stagedCode) return;
         addBarcodeCount(stagedCode);
@@ -289,7 +317,6 @@
         }
     }
 
-    // Барааны тоог баталгаажуулж нэмэх
     function addBarcodeCount(code) {
         code = code.trim();
         const now = Date.now();
@@ -325,14 +352,13 @@
             }
         }
         
-        playBeep(); // Beep чимээ ажиллана
+        playBeep();
         showToast(`✅ ${itemObj.name} (+1 нэмэгдлээ)`);
         if (navigator.vibrate) navigator.vibrate(100);
 
         renderTable();
     }
 
-    // Тоог - ба + товчоор болон шууд засах функцууд
     function changeQty(key, delta) {
         if (MASTER_LIST[key]) {
             MASTER_LIST[key].scanned = Math.max(0, MASTER_LIST[key].scanned + delta);
@@ -351,7 +377,6 @@
         }
     }
 
-    // Таб шилжүүлэх
     function setTab(tabName) {
         activeTab = tabName;
         document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
@@ -365,15 +390,12 @@
 
         const searchQuery = document.getElementById("searchInput").value.toLowerCase().trim();
 
-        // Ангилах, хайх шүүлтүүр
         let filteredKeys = keys.filter(k => {
             const item = MASTER_LIST[k];
             
-            // Хайлтын текстийн дагуу
             const matchesSearch = item.name.toLowerCase().includes(searchQuery) || k.toLowerCase().includes(searchQuery);
             if (!matchesSearch) return false;
 
-            // Табын дагуу
             if (activeTab === "missing") {
                 return !item.isUnregistered && item.scanned < item.qty;
             } else if (activeTab === "done") {
@@ -381,10 +403,9 @@
             } else if (activeTab === "unreg") {
                 return item.isUnregistered || item.scanned > item.qty;
             }
-            return true; // "all"
+            return true;
         });
 
-        // Сүүлд уншуулсныг хамгийн дээр эрэмбэлэх
         const itemsWithKey = filteredKeys.map(k => ({ key: k, ...MASTER_LIST[k] })).sort((a, b) => {
             if (a.lastScannedAt || b.lastScannedAt) {
                 return (b.lastScannedAt || 0) - (a.lastScannedAt || 0);
@@ -396,7 +417,6 @@
         let totalScanned = 0;
         let totalTarget = 0;
 
-        // Нийт дүнг бүх бараанаас тооцоолно
         keys.forEach(k => {
             totalScanned += MASTER_LIST[k].scanned;
             totalTarget += MASTER_LIST[k].qty;
@@ -414,23 +434,19 @@
             let statusText = "Дутуу";
             let badgeClass = "badge-danger";
             let rowBg = "#ffffff";
-            let textColor = "#dc3545";
 
             if (item.isUnregistered) {
                 statusText = "Бүртгэлгүй";
                 badgeClass = "badge-dark";
                 rowBg = "#f1f3f5";
-                textColor = "#000000";
             } else if (item.scanned > item.qty) {
                 statusText = "Илүү";
                 badgeClass = "badge-dark";
                 rowBg = "#f1f3f5";
-                textColor = "#000000";
             } else if (item.scanned === item.qty && item.qty > 0) {
                 statusText = "Бүрэн";
                 badgeClass = "badge-success";
                 rowBg = "#f0fff4";
-                textColor = "#198754";
             }
 
             return `
@@ -441,4 +457,19 @@
                     <td>
                         <div class="qty-ctrl">
                             <button class="btn-qty" onclick="changeQty('${item.key}', -1)">-</button>
-                            
+                            <input type="number" class="qty-input" value="${item.scanned}" onchange="setQtyDirect('${item.key}', this.value)">
+                            <button class="btn-qty" onclick="changeQty('${item.key}', 1)">+</button>
+                        </div>
+                    </td>
+                    <td style="text-align: center;">
+                        <span class="badge ${badgeClass}">${statusText}</span>
+                    </td>
+                </tr>
+            `;
+        }).join("");
+
+        document.getElementById("logTable").innerHTML = html;
+        document.getElementById("totalCount").innerText = `${totalScanned} / ${totalTarget}`;
+    }
+
+    
